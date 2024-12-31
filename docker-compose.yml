@@ -1,0 +1,34 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - MSSQL_USER_NAME=${MSSQL_USER_NAME}
+      - MSSQL_PASSWORD=${MSSQL_PASSWORD}
+      - CR_PAT=${CR_PAT}
+      - PORT=${PORT}
+
+    depends_on:
+      database:
+        condition: service_started
+
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: ${MSSQL_PASSWORD}
+      ACCEPT_EULA: "Y"
+      network_mode: host
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  sqlserverdata:
